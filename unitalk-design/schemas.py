@@ -91,13 +91,15 @@ DESIGN_GENERATION_GET = {
     "properties": {
         "generationId": {
             "type": "string",
-            "description": "The generation (mediaTask) id to fetch.",
+            "description": "The generation (mediaTask) id to fetch. Omit to list "
+            "the current session's recent runs and pick one to critique.",
         }
     },
-    "required": ["generationId"],
     "additionalProperties": False,
     "description": (
-        "Fetch a generation run by id (status + result image URLs), so you can "
-        "critique completed output. Owner-checked server-side."
+        "Inspect generations so you can critique completed output. With a "
+        "generationId, returns that run (status + result image URLs). Without "
+        "one, returns the current session's recent runs (newest first) — use "
+        "this to discover the run to critique. Owner-checked server-side."
     ),
 }

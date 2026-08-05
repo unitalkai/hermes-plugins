@@ -147,9 +147,10 @@ def handle_draft_upsert(params, **kwargs):
 
 
 def handle_generation_get(params, **kwargs):
-    """GET /design/generations?generationId=... -> { run }"""
+    """GET /design/generations
+    with generationId -> { run } ; without -> { runs } (session's recent runs).
+    """
     params = params or {}
     generation_id = (params.get("generationId") or "").strip()
-    if not generation_id:
-        return _err("generationId is required")
-    return _request("GET", "/design/generations", params={"generationId": generation_id})
+    query = {"generationId": generation_id} if generation_id else None
+    return _request("GET", "/design/generations", params=query)
