@@ -1,0 +1,18 @@
+name: unitalk-design
+version: "0.1.0"
+description: >
+  Graphic-designer ("Iris") Workspace tools. Bridges Hermes reasoning to the
+  Unitalk design draft/generation state by making authenticated HTTP calls to
+  the Convex Workspace API. Exposes three tools: design_draft_get,
+  design_draft_upsert, design_generation_get. Does not generate images itself
+  and does not parse assistant prose.
+
+# Environment the plugin reads at call time (see tools.py):
+#   IRIS_WORKSPACE_URL  Convex .site base, e.g. https://<deployment>.convex.site
+#   LITELLM_KEY_ID      the container's LiteLLM key (sent as x-litellm-key;
+#                       the Workspace API self-verifies it via /key/info)
+# Identity (userId) is read from the container's honcho file
+# (default /opt/data/honcho.json, override with HERMES_HONCHO_PATH).
+requires_env:
+  - IRIS_WORKSPACE_URL
+  - LITELLM_KEY_ID

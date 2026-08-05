@@ -1,0 +1,5 @@
+# Snippet for the container's ~/.hermes/config.yaml — enables this plugin.
+# Merge into the existing config; do not overwrite unrelated keys.
+plugins:
+  enabled:
+    - unitalk-design
