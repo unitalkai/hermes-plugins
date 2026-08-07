@@ -1,7 +1,10 @@
 """JSON tool schemas for the unitalk-design plugin.
 
-These are the tool surfaces the model sees. They mirror the Convex Workspace
-API contract (src/convex/http.ts) exactly:
+Each schema follows the Hermes plugin shape exactly:
+    { "name": ..., "description": ..., "parameters": { <JSON Schema> } }
+(the JSON Schema lives under "parameters", NOT at the top level.)
+
+They mirror the Convex Workspace API contract (src/convex/http.ts):
   design_draft_get        -> GET  /design/drafts/current
   design_draft_upsert     -> PUT  /design/drafts/current
   design_generation_get   -> GET  /design/generations?generationId=...
@@ -28,7 +31,7 @@ _DRAFT_PROPERTIES = {
     "model": {
         "type": "string",
         "description": "Image model id. One of: nano-banana-2, nano-banana-pro, "
-        "imagen-4, grok-imagine, chatgpt-images-2, flux-2-pro, flux-2-flex, "
+        "imagen-4, grok-imagine, chatgpt-images-2.0, flux-2-pro, flux-2-flex, "
         "ideogram-v3, seedream-5. Not all models accept the same aspect ratios "
         "or image inputs.",
     },
@@ -52,7 +55,7 @@ _DRAFT_PROPERTIES = {
     },
     "sourceAssetId": {
         "type": "string",
-        "description": "For operation=edit: the asset id to edit.",
+        "description": "For operation=edit: the asset id/url to edit.",
     },
     "referenceAssetIds": {
         "type": "array",
@@ -63,20 +66,21 @@ _DRAFT_PROPERTIES = {
 }
 
 DESIGN_DRAFT_GET = {
-    "type": "object",
-    "properties": {},
-    "additionalProperties": False,
+    "name": "design_draft_get",
     "description": (
         "Read the user's current design draft (the shared, editable spec that "
         "bridges your reasoning and the UI's production controls). Call this "
         "before proposing changes so you reason over the live state."
     ),
+    "parameters": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": False,
+    },
 }
 
 DESIGN_DRAFT_UPSERT = {
-    "type": "object",
-    "properties": dict(_DRAFT_PROPERTIES),
-    "additionalProperties": False,
+    "name": "design_draft_upsert",
     "description": (
         "Update the user's current design draft. Send only the fields you want "
         "to change; omitted fields are left untouched. This never triggers a "
@@ -84,22 +88,30 @@ DESIGN_DRAFT_UPSERT = {
         "user-controlled fields: don't overwrite a field the user just set "
         "unless they asked you to."
     ),
+    "parameters": {
+        "type": "object",
+        "properties": dict(_DRAFT_PROPERTIES),
+        "additionalProperties": False,
+    },
 }
 
 DESIGN_GENERATION_GET = {
-    "type": "object",
-    "properties": {
-        "generationId": {
-            "type": "string",
-            "description": "The generation (mediaTask) id to fetch. Omit to list "
-            "the current session's recent runs and pick one to critique.",
-        }
-    },
-    "additionalProperties": False,
+    "name": "design_generation_get",
     "description": (
         "Inspect generations so you can critique completed output. With a "
         "generationId, returns that run (status + result image URLs). Without "
         "one, returns the current session's recent runs (newest first) — use "
         "this to discover the run to critique. Owner-checked server-side."
     ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "generationId": {
+                "type": "string",
+                "description": "The generation (mediaTask) id to fetch. Omit to list "
+                "the current session's recent runs and pick one to critique.",
+            }
+        },
+        "additionalProperties": False,
+    },
 }
