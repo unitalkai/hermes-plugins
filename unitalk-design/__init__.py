@@ -5,7 +5,18 @@ Loaded by Hermes from ~/.hermes/plugins/unitalk-design/ (or via a pip entry
 point); does not modify hermes-agent core.
 """
 
-from . import schemas, tools
+# Import both submodules whether Hermes loads this as a package (relative) or as
+# a standalone module with the plugin dir on sys.path (absolute). The dir name
+# has a hyphen, so relative import isn't always available.
+try:
+    from . import schemas, tools
+except ImportError:  # pragma: no cover
+    import os
+    import sys
+
+    sys.path.insert(0, os.path.dirname(__file__))
+    import schemas  # type: ignore
+    import tools  # type: ignore
 
 TOOLSET = "design"
 
