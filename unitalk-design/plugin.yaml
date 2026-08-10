@@ -1,5 +1,5 @@
 name: unitalk-design
-version: "0.1.0"
+version: "0.2.0"
 description: >
   Graphic-designer ("Iris") Workspace tools. Bridges Hermes reasoning to the
   Unitalk design draft/generation state by making authenticated HTTP calls to
@@ -9,10 +9,9 @@ description: >
 
 # Environment the plugin reads at call time (see tools.py):
 #   IRIS_WORKSPACE_URL  Convex .site base, e.g. https://<deployment>.convex.site
-#   LITELLM_KEY_ID      the container's LiteLLM key (sent as x-litellm-key;
-#                       the Workspace API self-verifies it via /key/info)
-# Identity (userId) is read from the container's honcho file
-# (default /opt/data/honcho.json, override with HERMES_HONCHO_PATH).
-requires_env:
-  - IRIS_WORKSPACE_URL
-  - LITELLM_KEY_ID
+#   LITELLM_KEY_ID      the container's LiteLLM key (sent as x-litellm-key).
+# The Workspace API calls the gateway's /key/info to verify the key AND read its
+# metadata { userId, orgId } — so the key alone carries authenticity + identity.
+#
+# No `requires_env` gate: the tools always register, and each handler returns a
+# clear error if an env var is missing (easier to diagnose than hidden tools).
