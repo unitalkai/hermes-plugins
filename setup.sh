@@ -1,60 +1,61 @@
 #!/usr/bin/env bash
 #
-# Install the unitalk_design plugin + design-workflow skill into the Iris
-# Hermes profile. Idempotent: safe to re-run. Run inside a Hermes instance
-# (Salif runs this after the repo is cloned into the shared volume).
+# Install the unitalk_design plugin + design-workflow skill for the Iris profile.
+# Idempotent: safe to re-run. Run inside a Hermes instance.
 #
 #   ./setup.sh
 #
-# NOTE: the plugin dir/name uses an underscore (unitalk_design), not a hyphen —
-# the directory name must be a valid Python module name for Hermes to import it.
+# Per the Hermes docs, plugin CODE is loaded only from the global user plugins
+# dir (`~/.hermes/plugins/`), NOT from per-profile dirs — so the plugin files go
+# there. The per-profile `plugins enable` then gates whether register() runs for
+# the iris profile. (Override the plugins dir with HERMES_PLUGINS_DIR if needed.)
 #
 set -euo pipefail
 
-# Resolve the repo root so the script works from any cwd.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SRC="$SCRIPT_DIR/unitalk_design"
 
 PROFILE="iris"
 PROFILE_ROOT="/opt/data/profiles/$PROFILE"
-PLUGIN_DEST="$PROFILE_ROOT/plugins/unitalk_design"
+
+# Global user plugins dir — where Hermes actually discovers/loads plugin code.
+PLUGINS_DIR="${HERMES_PLUGINS_DIR:-$HOME/.hermes/plugins}"
+PLUGIN_DEST="$PLUGINS_DIR/unitalk_design"
+
+# Skills still load per-profile (that part already works).
 SKILL_DEST="$PROFILE_ROOT/skills"
 
-# Only the plugin runtime files — not README, config.example.yaml, or skills/.
 PLUGIN_FILES=(__init__.py plugin.yaml schemas.py tools.py)
 
-echo "==> Installing unitalk_design into the '$PROFILE' profile"
+echo "==> Installing unitalk_design"
+echo "    plugin code -> $PLUGIN_DEST   (global plugins dir)"
+echo "    skill       -> $SKILL_DEST"
 
-# 0. Remove the old hyphenated plugin, which Hermes couldn't import.
-echo "==> Removing the old 'unitalk-design' (hyphen) plugin if present"
+# 0. Clean up any previous installs (old hyphen name + the per-profile location
+#    that Hermes never loaded from).
 hermes -p "$PROFILE" plugins disable unitalk-design >/dev/null 2>&1 || true
-rm -rf "$PROFILE_ROOT/plugins/unitalk-design"
+rm -rf "$PROFILE_ROOT/plugins/unitalk-design" "$PROFILE_ROOT/plugins/unitalk_design"
+rm -rf "$PLUGINS_DIR/unitalk-design"
 
 # 1. Ensure the Iris profile exists.
-if hermes profile show "$PROFILE" >/dev/null 2>&1; then
-  echo "    profile '$PROFILE' already exists"
-else
+if ! hermes profile show "$PROFILE" >/dev/null 2>&1; then
   echo "    profile '$PROFILE' not found — creating it"
   hermes profile create "$PROFILE" --no-alias
 fi
 
-# 2. Copy only the plugin files.
-echo "==> Copying plugin files to $PLUGIN_DEST"
+# 2. Copy the plugin files into the GLOBAL plugins dir.
 mkdir -p "$PLUGIN_DEST"
 for f in "${PLUGIN_FILES[@]}"; do
   cp "$SRC/$f" "$PLUGIN_DEST/$f"
 done
 
-# 3. Copy the managed skill.
-echo "==> Copying design-workflow skill to $SKILL_DEST"
+# 3. Copy the managed skill (per-profile).
 mkdir -p "$SKILL_DEST"
 cp -r "$SRC/skills/design-workflow" "$SKILL_DEST/"
 
-# 4. Enable the plugin via the CLI — writes plugins.enabled into iris's own
-#    config.yaml, preserving the rest of the file (better than overwriting it).
+# 4. Enable the plugin for the iris profile.
 echo "==> Enabling plugin 'unitalk_design' on profile '$PROFILE'"
 hermes -p "$PROFILE" plugins enable unitalk_design
 
-echo "==> Done. 'unitalk_design' is installed and enabled on the '$PROFILE' profile."
-echo "    Restart the gateway, then check the startup log for:"
-echo "      'unitalk_design' registered tools: design_draft_get, design_draft_upsert, design_generation_get"
+echo "==> Done. Restart the gateway, then in a session run '/plugins' — you should"
+echo "    see 'unitalk_design' as LOADED, and the design_draft_* tools available."
