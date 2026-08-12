@@ -1,5 +1,5 @@
-name: unitalk-design
-version: "0.2.0"
+name: unitalk_design
+version: "0.3.0"
 description: >
   Graphic-designer ("Iris") Workspace tools. Bridges Hermes reasoning to the
   Unitalk design draft/generation state by making authenticated HTTP calls to

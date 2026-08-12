@@ -2,4 +2,4 @@
 # Merge into the existing config; do not overwrite unrelated keys.
 plugins:
   enabled:
-    - unitalk-design
+    - unitalk_design
