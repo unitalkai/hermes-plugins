@@ -7,12 +7,18 @@ Auth: the plugin sends only the container's LiteLLM key (`x-litellm-key`). The
 Workspace API calls the gateway's /key/info, which verifies the key and returns
 its metadata `{ userId, orgId }` — so the key alone carries both authenticity
 and identity. No user id, honcho file, or shared secret is needed here.
+
+HTTP goes through the stdlib (`urllib.request`) on purpose: the plugin must
+import cleanly in whatever Python environment the gateway runs. The instance
+sets HERMES_DISABLE_LAZY_INSTALLS=1, so a third-party dependency like `requests`
+may be absent at boot — importing it would crash register() and hide every tool.
 """
 
 import json
 import os
-
-import requests
+import urllib.error
+import urllib.parse
+import urllib.request
 
 _TIMEOUT = 30  # seconds
 
@@ -46,11 +52,21 @@ def _litellm_key():
 
 
 def _headers():
-    """Auth header, or raise ValueError with a precise, model-readable reason."""
+    """Auth header, or raise ValueError with a precise, model-readable reason.
+
+    Also forwards this container's Hermes chat session id (HERMES_SESSION_ID) as
+    ``x-hermes-session`` so the Workspace API writes the draft on the SAME Convex
+    session the browser panel is showing (it links the session by that id). If
+    the env var is absent the API falls back to the user's most-recent session.
+    """
     key = _litellm_key()
     if not key:
         raise ValueError("LITELLM_KEY_ID is not set in the container environment")
-    return {"x-litellm-key": key, "Content-Type": "application/json"}
+    headers = {"x-litellm-key": key, "Content-Type": "application/json"}
+    hermes_session = (os.getenv("HERMES_SESSION_ID") or "").strip()
+    if hermes_session:
+        headers["x-hermes-session"] = hermes_session
+    return headers
 
 
 def _request(method, path, *, params=None, body=None):
@@ -61,24 +77,36 @@ def _request(method, path, *, params=None, body=None):
         headers = _headers()
     except ValueError as exc:
         return _err(str(exc))
+
+    url = f"{base}{path}"
+    if params:
+        query = urllib.parse.urlencode({k: v for k, v in params.items() if v is not None})
+        if query:
+            url = f"{url}?{query}"
+
+    data = json.dumps(body).encode("utf-8") if body is not None else None
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)
+
     try:
-        resp = requests.request(
-            method,
-            f"{base}{path}",
-            headers=headers,
-            params=params,
-            json=body,
-            timeout=_TIMEOUT,
-        )
-    except requests.RequestException as exc:
+        with urllib.request.urlopen(req, timeout=_TIMEOUT) as resp:
+            raw = resp.read().decode("utf-8")
+    except urllib.error.HTTPError as exc:
+        status = exc.code
+        text = ""
+        try:
+            text = exc.read().decode("utf-8")
+        except Exception:  # noqa: BLE001 - best-effort body read
+            pass
+        if status == 401:
+            return _err("unauthorized (LiteLLM key rejected or missing userId metadata)")
+        return _err(f"workspace API returned {status}: {text[:300]}")
+    except urllib.error.URLError as exc:
+        return _err(f"request failed: {exc.reason}")
+    except Exception as exc:  # noqa: BLE001 - never let a tool crash the agent
         return _err(f"request failed: {exc}")
 
-    if resp.status_code == 401:
-        return _err("unauthorized (LiteLLM key rejected or missing userId metadata)")
-    if not resp.ok:
-        return _err(f"workspace API returned {resp.status_code}: {resp.text[:300]}")
     try:
-        payload = resp.json()
+        payload = json.loads(raw)
     except ValueError:
         return _err("workspace API returned a non-JSON response")
     return json.dumps({"ok": True, **payload})
