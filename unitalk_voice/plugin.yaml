@@ -1,0 +1,19 @@
+name: unitalk_voice
+version: "0.1.0"
+description: >
+  Voxo/Lexi audio co-pilot Workspace tools. Bridges Hermes reasoning to the
+  Unitalk transcript/deliverable state via authenticated HTTP calls to the
+  Convex Workspace API. Exposes three tools: voice_transcript_get,
+  voice_deliverable_get, voice_deliverable_upsert. Does not transcribe or call
+  any model itself — transcription runs server-side; the agent reads the
+  transcript and writes the deliverables it produces.
+
+# Environment the plugin reads at call time (same as unitalk_design — one Convex
+# deployment, one identity):
+#   IRIS_WORKSPACE_URL  Convex .site base, e.g. https://<deployment>.convex.site
+#   LITELLM_KEY_ID      the container's LiteLLM key (sent as x-litellm-key).
+# The Workspace API calls the gateway's /key/info to verify the key AND read its
+# metadata { userId, orgId } — the key alone carries authenticity + identity.
+#
+# No `requires_env` gate: the tools always register, and each handler returns a
+# clear error if an env var is missing (easier to diagnose than hidden tools).
