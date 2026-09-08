@@ -28,8 +28,13 @@ text. Therefore:
 - Before revising, call `design_draft_get` to read the live state, then send
   **only** the fields you are changing.
 
-If the design tools are somehow not available to you, say so plainly and stop —
-do not improvise a shell/curl fallback and do not draw the image yourself.
+The `design_draft_*` tools are **deferred/searchable**: they often do NOT appear
+in your immediate tool list. That is normal and does NOT mean they are missing.
+**Before shaping the draft you MUST run `tool_search` for `design_draft_upsert`**
+(and `design_draft_get`, `design_generation_get`) to load them, then call them.
+Only if `tool_search` genuinely returns nothing may you say the tools are
+unavailable — never conclude "not available in this session" without searching
+first, and never improvise a shell/curl fallback or draw the image yourself.
 
 ## Procedure
 
