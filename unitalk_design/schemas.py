@@ -31,8 +31,8 @@ _DRAFT_PROPERTIES = {
     "model": {
         "type": "string",
         "description": "Image model id. One of: nano-banana-2, nano-banana-pro, "
-        "imagen-4, grok-imagine, chatgpt-images-2.0, flux-2-pro, flux-2-flex, "
-        "ideogram-v3, seedream-5. Not all models accept the same aspect ratios "
+        "grok-imagine, chatgpt-images-2.0, flux-2-pro, flux-2-flex, "
+        "ideogram-v4, seedream-5. Not all models accept the same aspect ratios "
         "or image inputs.",
     },
     "aspectRatio": {
