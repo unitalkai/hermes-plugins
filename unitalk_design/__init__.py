@@ -44,3 +44,17 @@ def register(ctx):
         handler=tools.handle_generation_get,
         description="Fetch a generation run (status + result URLs) to critique output.",
     )
+    ctx.register_tool(
+        name="brand_get",
+        toolset=TOOLSET,
+        schema=schemas.BRAND_GET,
+        handler=tools.handle_brand_get,
+        description="Read the brand kit (active rules + uploaded asset URLs to analyze).",
+    )
+    ctx.register_tool(
+        name="brand_profile_upsert",
+        toolset=TOOLSET,
+        schema=schemas.BRAND_PROFILE_UPSERT,
+        handler=tools.handle_brand_profile_upsert,
+        description="Propose extracted brand rules as a draft version (user validates).",
+    )

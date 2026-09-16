@@ -137,3 +137,21 @@ def handle_generation_get(params, **kwargs):
     generation_id = (params.get("generationId") or "").strip()
     query = {"generationId": generation_id} if generation_id else None
     return _request("GET", "/design/generations", params=query)
+
+
+# Brand profile fields the Workspace API accepts (must match http.ts /brand/profile).
+_BRAND_FIELDS = ("palette", "fonts", "tone", "styleDescriptor", "doRules", "dontRules")
+
+
+def handle_brand_get(params, **kwargs):
+    """GET /brand/current -> { kit, profile, assets }"""
+    return _request("GET", "/brand/current")
+
+
+def handle_brand_profile_upsert(params, **kwargs):
+    """PUT /brand/profile { ...rules } -> { profileId, status: 'draft' }"""
+    params = params or {}
+    body = {k: params[k] for k in _BRAND_FIELDS if k in params and params[k] is not None}
+    if not body:
+        return _err("no brand rules provided")
+    return _request("PUT", "/brand/profile", body=body)

@@ -115,3 +115,57 @@ DESIGN_GENERATION_GET = {
         "additionalProperties": False,
     },
 }
+
+# ── Brand kit (Graphic designer) ──────────────────────────────────────────────
+#   brand_get            -> GET  /brand/current
+#   brand_profile_upsert -> PUT  /brand/profile   (proposes a DRAFT version)
+
+BRAND_GET = {
+    "name": "brand_get",
+    "description": (
+        "Read the user's brand kit: the active (validated) profile rules "
+        "(palette, tone, style, do/don't) plus the list of uploaded assets with "
+        "their URLs (logo, reference images, brand documents). Fetch those asset "
+        "URLs with your own file/vision tools to READ the brand book / images, "
+        "then propose extracted rules with brand_profile_upsert. Call this before "
+        "reasoning about the brand so you work from the live state."
+    ),
+    "parameters": {"type": "object", "properties": {}, "additionalProperties": False},
+}
+
+BRAND_PROFILE_UPSERT = {
+    "name": "brand_profile_upsert",
+    "description": (
+        "Propose brand rules you extracted from the uploaded files as a NEW DRAFT "
+        "profile version. This does NOT apply automatically — the user reviews and "
+        "validates it before it affects any generation. Send only the fields you "
+        "derived; describe colors with a human NAME + role, not just hex."
+    ),
+    "parameters": {
+        "type": "object",
+        "properties": {
+            "palette": {
+                "type": "array",
+                "description": "Brand colors. Each: { hex, name, role } where role is "
+                "'primary' | 'accent' | 'avoid' (etc.). Always give a human name.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "hex": {"type": "string", "description": "e.g. #C47A55"},
+                        "name": {"type": "string", "description": "e.g. warm terracotta"},
+                        "role": {"type": "string"},
+                    },
+                },
+            },
+            "fonts": {"type": "array", "items": {"type": "string"}},
+            "tone": {"type": "string", "description": "Brand voice / tone keywords."},
+            "styleDescriptor": {
+                "type": "string",
+                "description": "One-line visual style guide (e.g. 'minimal, premium, editorial').",
+            },
+            "doRules": {"type": "array", "items": {"type": "string"}},
+            "dontRules": {"type": "array", "items": {"type": "string"}},
+        },
+        "additionalProperties": False,
+    },
+}
