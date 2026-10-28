@@ -39,9 +39,9 @@ echo "    skill       -> $SKILL_DEST"
 #    user's ~/plugins (e.g. /root/plugins), ~/.hermes/plugins, the profile's own
 #    plugins/ dir, and the old hyphen name — all dead ends that hide the code.
 hermes -p "$PROFILE" plugins disable unitalk-design >/dev/null 2>&1 || true
-rm -rf "$HOME/plugins/unitalk_design" "$HOME/plugins/unitalk-design"
-rm -rf "/root/plugins/unitalk_design" "/root/plugins/unitalk-design"
-rm -rf "$HOME/.hermes/plugins/unitalk_design" "$HOME/.hermes/plugins/unitalk-design"
+# rm -rf "$HOME/plugins/unitalk_design" "$HOME/plugins/unitalk-design"
+# rm -rf "/root/plugins/unitalk_design" "/root/plugins/unitalk-design"
+# rm -rf "$HOME/.hermes/plugins/unitalk_design" "$HOME/.hermes/plugins/unitalk-design"
 rm -rf "$PROFILE_ROOT/plugins/unitalk_design" "$PROFILE_ROOT/plugins/unitalk-design"
 rm -rf "$PLUGINS_DIR/unitalk-design"
 
