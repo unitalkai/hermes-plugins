@@ -57,6 +57,12 @@ done
 mkdir -p "$SKILL_DEST"
 cp -r "$SRC/skills/design-workflow" "$SKILL_DEST/"
 
+# 3b. Make everything readable by the gateway (uid 10000 'hermes'). If this runs
+#     as root (docker startup / docker exec), the files would be root:root and
+#     the supervised gateway can't read them → the plugin loads 0 tools silently.
+#     Best-effort: a harmless no-op when already running as 'hermes'.
+chown -R hermes:hermes "$PLUGIN_DEST" "$SKILL_DEST/design-workflow" 2>/dev/null || true
+
 # 4. Import check (stdlib only — must succeed under the gateway's Python too).
 echo "==> Import check"
 python3 -c "import sys; sys.path.insert(0, '$PROFILE_ROOT/plugins'); import $PLUGIN; print('    register OK:', hasattr($PLUGIN, 'register'))"

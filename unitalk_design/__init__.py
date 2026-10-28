@@ -1,8 +1,10 @@
-"""unitalk-design Hermes plugin.
+"""unitalk_design Hermes plugin.
 
-Registers the three Workspace tools for the graphic-designer ("Iris") profile.
-Loaded by Hermes from ~/.hermes/plugins/unitalk-design/ (or via a pip entry
-point); does not modify hermes-agent core.
+Registers the Workspace tools for the graphic-designer ("Iris") profile.
+Loaded by Hermes from the profile's plugins dir, i.e.
+${HERMES_HOME}/plugins/unitalk_design/ (e.g. /opt/data/profiles/iris/plugins/) —
+NOT ~/.hermes/plugins and NOT the profile *home* (…/iris/home/plugins). Does not
+modify hermes-agent core.
 """
 
 # Import both submodules whether Hermes loads this as a package (relative) or as
